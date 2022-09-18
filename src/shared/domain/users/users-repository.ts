@@ -1,6 +1,9 @@
-import { UserModel } from './user.model';
+import { Filter } from '../filter.model';
+import { JazuPaginate } from '../jazupaginate.model';
+import { User } from './user.model';
 
 export interface UsersRepository {
-  findOne(usernamae: string): Promise<UserModel | undefined>;
-  create(user: UserModel): Promise<any>;
+  search(filter: Filter): Promise<JazuPaginate<User>>;
+  findOne(usernamae: string): Promise<User | undefined>;
+  create(user: User): Promise<any>;
 }

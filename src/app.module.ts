@@ -5,6 +5,7 @@ import { eventEmitter2Config } from './config/event-emitter-2.config';
 import { ControllersModule } from './controllers/controllers.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { EmailsModule } from './services/emails/emails.module';
+import { MigrationsConfig } from './config/migrations.config';
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { EmailsModule } from './services/emails/emails.module';
     EmailsModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [MigrationsConfig],
 })
 export class AppModule {}

@@ -11,7 +11,7 @@ import { CreateUserDTO } from '@src/services/users/application/create/create-use
 import { UserCreator } from '@src/services/users/application/create/creator';
 
 @Controller('users')
-export class RegisterController {
+export class UserCreatorController {
   constructor(private userCreator: UserCreator) {}
 
   @UseGuards(JwtAuthGuard)

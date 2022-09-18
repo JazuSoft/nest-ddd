@@ -3,11 +3,12 @@ import { JwtService } from '@nestjs/jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { authConstants } from '@src/config/auth.config';
 import { SERVICES_IMPORT_NAMES } from '@src/config/service-provider';
-import { UserModel } from '@src/shared/domain/users/user.model';
+import { User } from '@src/shared/domain/users/user.model';
 import { UsersRepository } from '@src/shared/domain/users/users-repository';
 import { ExtractJwt } from 'passport-jwt';
 import { Strategy } from 'passport-local';
 import * as bcrypt from 'bcrypt';
+import { RoleResponse } from '@src/shared/application/role-response.model';
 
 const UserRepo = () => Inject(SERVICES_IMPORT_NAMES.USER_REPOSITORY);
 
@@ -17,24 +18,25 @@ export class PassportLocalAuthService extends PassportStrategy(Strategy) {
     @UserRepo() private usersRespository: UsersRepository,
     private jwtService: JwtService,
   ) {
-    super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
-      secretOrKey: authConstants.secret,
-    });
+    super();
   }
 
-  async login(user: UserModel) {
-    const payload = { username: user.username(), sub: user.id() };
+  async login(user: User) {
+    const payload = { email: user.email(), sub: user.id() };
     return {
-      access_token: this.jwtService.sign(payload),
+      token: this.jwtService.sign(payload),
+      id: user.id(),
+      email: user.email(),
+      lastname: user.lastname(),
+      firstname: user.firstname(),
+      photo: user.photo(),
+      roles: user.roles().map((x) => RoleResponse.fromDomain(x)),
     };
   }
 
-  private async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.usersRespository.findOne(username);
-    const hash = await bcrypt.hash(pass, authConstants.hashSalt);
-    const isMatch = user && (await bcrypt.compare(user.password(), hash));
+  private async validateUser(email: string, pass: string): Promise<any> {
+    const user = await this.usersRespository.findOne(email);
+    const isMatch = user && (await bcrypt.compare(pass, user.password()));
 
     if (isMatch) {
       return user;
@@ -42,8 +44,8 @@ export class PassportLocalAuthService extends PassportStrategy(Strategy) {
     return null;
   }
 
-  async validate(username: string, password: string): Promise<any> {
-    const user = await this.validateUser(username, password);
+  async validate(email: string, password: string): Promise<any> {
+    const user = await this.validateUser(email, password);
     if (!user) {
       throw new UnauthorizedException();
     }

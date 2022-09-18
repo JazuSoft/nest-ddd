@@ -1,9 +1,15 @@
-import { Controller, Request, Post, UseGuards, Get } from '@nestjs/common';
+import {
+  Controller,
+  Request,
+  Post,
+  UseGuards,
+  HttpStatus,
+} from '@nestjs/common';
+import { JzResponse } from '@src/shared/application/paginate-response.model copy';
 import { PassportLocalAuthService } from '@src/shared/infraestructure/auth-strategy/passport-local-auth.service';
-import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { LocalAuthGuard } from 'src/guards/local-auth.guard';
 
-@Controller('auth')
+@Controller('users')
 export class LoginController {
   constructor(private authService: PassportLocalAuthService) {}
 
@@ -13,14 +19,9 @@ export class LoginController {
    * @returns
    */
   @UseGuards(LocalAuthGuard)
-  @Post('login')
+  @Post('authenticate')
   async login(@Request() req) {
-    return this.authService.login(req.user);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  getProfile(@Request() req) {
-    return req.user;
+    const data = await this.authService.login(req.user);
+    return new JzResponse<any>(data, HttpStatus.OK);
   }
 }

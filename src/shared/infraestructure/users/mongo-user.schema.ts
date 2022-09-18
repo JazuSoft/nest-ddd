@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Role } from '@src/shared/domain/roles/role.model';
 import { Document } from 'mongoose';
-import { UserModel } from '../../domain/users/user.model';
+import { User } from '../../domain/users/user.model';
+import * as mongoose from 'mongoose';
 
 export type MongoUserDocument = MongoUser & Document;
 
@@ -10,23 +12,46 @@ export class MongoUser {
   _id: string;
 
   @Prop({ required: true })
-  username: string;
+  email: string;
 
   @Prop({ required: true })
   password: string;
 
+  @Prop({ required: true })
+  lastname: string;
+
+  @Prop({ required: true })
+  firstname: string;
+
+  @Prop({ required: false })
+  photo: string;
+
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'roles' }] })
+  roles: Role[];
+
   static toDomain(
     user: MongoUser &
       Document<any, any, any> & { _id: import('mongoose').Types.ObjectId },
-  ): UserModel {
-    return new UserModel(user._id, user.username, user.password);
+  ): User {
+    return new User(
+      user._id,
+      user.email,
+      user.password,
+      user.lastname,
+      user.firstname,
+      user.photo,
+      user.roles,
+    );
   }
 
-  static fromDomain(user: UserModel): MongoUser {
+  static fromDomain(user: User): MongoUser {
     const mongoUser = new MongoUser();
     mongoUser._id = user.id();
-    mongoUser.username = user.username();
+    mongoUser.email = user.email();
     mongoUser.password = user.password();
+    mongoUser.lastname = user.lastname();
+    mongoUser.firstname = user.firstname();
+    mongoUser.photo = user.photo();
     return mongoUser;
   }
 }
